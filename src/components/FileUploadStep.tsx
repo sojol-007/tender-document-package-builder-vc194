@@ -167,6 +167,7 @@ export const FileUploadStep: React.FC<Props> = ({
 
   /**
    * Generates sample test PDFs for instant testing (includes an intentional duplicate file)
+   * Dynamically adapts to currently loaded requirements or fallback titles.
    */
   const handleGenerateTestPdfs = async () => {
     setIsProcessing(true);
@@ -174,26 +175,36 @@ export const FileUploadStep: React.FC<Props> = ({
 
     const sampleFiles: File[] = [];
 
-    // Create 4 distinct PDF files
-    const tradeLicenseFile = await createSamplePdfFile('Trade License', 2);
-    sampleFiles.push(tradeLicenseFile);
+    // Derive document titles dynamically from loaded requirements or defaults
+    const docTitles =
+      requirements && requirements.length > 0
+        ? requirements.slice(0, 5).map(r => r.title_en)
+        : [
+            'Trade License',
+            'TIN Certificate',
+            'VAT Certificate',
+            'Bank Solvency Certificate'
+          ];
 
-    const tinCertFile = await createSamplePdfFile('TIN Certificate', 1);
-    sampleFiles.push(tinCertFile);
+    for (let idx = 0; idx < docTitles.length; idx++) {
+      const title = docTitles[idx];
+      const pageCount = (idx % 3) + 1;
+      const file = await createSamplePdfFile(title, pageCount);
+      sampleFiles.push(file);
 
-    const vatCertFile = await createSamplePdfFile('VAT Certificate', 3);
-    sampleFiles.push(vatCertFile);
-
-    const bankSolvencyFile = await createSamplePdfFile('Bank Solvency Certificate', 2);
-    sampleFiles.push(bankSolvencyFile);
-
-    // Intentional Duplicate: Exact binary copy of tradeLicenseFile with a different filename!
-    // This allows testing Test Case 7: "Two PDFs with identical binary content but different filenames"
-    const duplicateBytes = await tradeLicenseFile.arrayBuffer();
-    const duplicateFile = new File([duplicateBytes], 'Trade_License_Duplicate_Copy.pdf', {
-      type: 'application/pdf'
-    });
-    sampleFiles.push(duplicateFile);
+      // Create intentional binary duplicate of the first file with a different filename!
+      // This enables testing Test Case 7: "Two PDFs with identical binary content but different filenames"
+      if (idx === 0) {
+        const duplicateBytes = await file.arrayBuffer();
+        const safeTitle = title.replace(/[^a-zA-Z0-9]/g, '_');
+        const duplicateFile = new File(
+          [duplicateBytes as unknown as BlobPart],
+          `${safeTitle}_Duplicate_Copy.pdf`,
+          { type: 'application/pdf' }
+        );
+        sampleFiles.push(duplicateFile);
+      }
+    }
 
     await processIncomingFiles(sampleFiles);
   };

@@ -71,118 +71,137 @@ function createCoverPage(
   fontBold: any,
   fontRegular: any
 ) {
-  const page = doc.addPage([595.28, 841.89]); // A4 in points
+  const page = doc.addPage([595.28, 841.89]); // Standard A4 in points
   const { width, height } = page.getSize();
 
-  // Top header banner accent bar
+  // Top header accent bar
   page.drawRectangle({
     x: 40,
-    y: height - 60,
+    y: height - 50,
     width: width - 80,
-    height: 6,
-    color: rgb(0.08, 0.28, 0.58) // Deep Navy
+    height: 4,
+    color: rgb(0.08, 0.28, 0.58) // Official Deep Navy
   });
 
   // Main Header
   page.drawText('TENDER SUBMISSION PACKAGE', {
     x: 40,
-    y: height - 95,
-    size: 20,
+    y: height - 78,
+    size: 18,
     font: fontBold,
     color: rgb(0.08, 0.28, 0.58)
   });
 
   page.drawText('OFFICIAL DOCUMENTATION COMPILATION', {
     x: 40,
-    y: height - 115,
-    size: 9,
-    font: fontRegular,
-    color: rgb(0.4, 0.45, 0.5)
-  });
-
-  // Tender Metadata Box
-  const metaBoxY = height - 260;
-  page.drawRectangle({
-    x: 40,
-    y: metaBoxY,
-    width: width - 80,
-    height: 130,
-    borderColor: rgb(0.85, 0.88, 0.92),
-    borderWidth: 1,
-    color: rgb(0.97, 0.98, 1.0)
-  });
-
-  const drawMetaRow = (label: string, value: string, yPos: number) => {
-    page.drawText(label.toUpperCase(), {
-      x: 55,
-      y: yPos,
-      size: 8.5,
-      font: fontBold,
-      color: rgb(0.3, 0.35, 0.45)
-    });
-    // Truncate value if too long to prevent overflow
-    const displayVal = value.length > 55 ? value.substring(0, 52) + '...' : value;
-    page.drawText(displayVal, {
-      x: 180,
-      y: yPos,
-      size: 9.5,
-      font: fontRegular,
-      color: rgb(0.1, 0.12, 0.15)
-    });
-  };
-
-  const packageDate = getTodayDateString();
-  drawMetaRow('Tender ID:', tender.tender_id, metaBoxY + 105);
-  drawMetaRow('Tender Title:', tender.title, metaBoxY + 80);
-  drawMetaRow('Procuring Entity:', tender.procuring_entity, metaBoxY + 55);
-  drawMetaRow('Bidder Name:', tender.bidder, metaBoxY + 30);
-  drawMetaRow('Submission Deadline:', tender.submission_deadline, metaBoxY + 10);
-
-  // Package Date Sub-bar
-  page.drawText(`Package Made Date: ${packageDate}`, {
-    x: 40,
-    y: metaBoxY - 20,
+    y: height - 94,
     size: 8.5,
     font: fontRegular,
     color: rgb(0.4, 0.45, 0.5)
   });
 
+  // Compact Metadata Box (2-column grid, ~88 pt high)
+  const metaBoxY = height - 195;
+  const metaBoxHeight = 90;
+  page.drawRectangle({
+    x: 40,
+    y: metaBoxY,
+    width: width - 80,
+    height: metaBoxHeight,
+    borderColor: rgb(0.85, 0.88, 0.92),
+    borderWidth: 1,
+    color: rgb(0.97, 0.98, 1.0)
+  });
+
+  const packageDate = getTodayDateString();
+
+  // Left Column
+  const drawLeftMeta = (label: string, value: string, yPos: number) => {
+    page.drawText(label.toUpperCase(), {
+      x: 52,
+      y: yPos,
+      size: 7.5,
+      font: fontBold,
+      color: rgb(0.3, 0.35, 0.45)
+    });
+    const displayVal = value.length > 38 ? value.substring(0, 36) + '...' : value;
+    page.drawText(displayVal, {
+      x: 135,
+      y: yPos,
+      size: 8.5,
+      font: fontRegular,
+      color: rgb(0.1, 0.12, 0.15)
+    });
+  };
+
+  // Right Column
+  const drawRightMeta = (label: string, value: string, yPos: number) => {
+    page.drawText(label.toUpperCase(), {
+      x: 320,
+      y: yPos,
+      size: 7.5,
+      font: fontBold,
+      color: rgb(0.3, 0.35, 0.45)
+    });
+    const displayVal = value.length > 34 ? value.substring(0, 32) + '...' : value;
+    page.drawText(displayVal, {
+      x: 415,
+      y: yPos,
+      size: 8.5,
+      font: fontRegular,
+      color: rgb(0.1, 0.12, 0.15)
+    });
+  };
+
+  drawLeftMeta('Tender ID:', tender.tender_id, metaBoxY + 68);
+  drawLeftMeta('Tender Title:', tender.title, metaBoxY + 44);
+  drawLeftMeta('Procuring Entity:', tender.procuring_entity, metaBoxY + 20);
+
+  drawRightMeta('Bidder Name:', tender.bidder, metaBoxY + 68);
+  drawRightMeta('Deadline:', tender.submission_deadline, metaBoxY + 44);
+  drawRightMeta('Package Date:', packageDate, metaBoxY + 20);
+
   // Section: Included Documents Table
-  const tableY = metaBoxY - 50;
+  const tableY = metaBoxY - 26;
   page.drawText('INCLUDED DOCUMENTS', {
     x: 40,
     y: tableY,
-    size: 12,
+    size: 11,
     font: fontBold,
     color: rgb(0.08, 0.28, 0.58)
   });
 
-  // Table header line
+  // Table header bar
   page.drawRectangle({
     x: 40,
-    y: tableY - 24,
+    y: tableY - 20,
     width: width - 80,
-    height: 18,
+    height: 16,
     color: rgb(0.92, 0.94, 0.97)
   });
 
-  page.drawText('#', { x: 48, y: tableY - 19, size: 8, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
-  page.drawText('DOCUMENT TITLE', { x: 75, y: tableY - 19, size: 8, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
-  page.drawText('FILE ATTACHED', { x: 285, y: tableY - 19, size: 8, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
-  page.drawText('EXPIRY', { x: 450, y: tableY - 19, size: 8, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
-  page.drawText('PAGES', { x: 505, y: tableY - 19, size: 8, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
+  page.drawText('#', { x: 48, y: tableY - 16, size: 7.5, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
+  page.drawText('DOCUMENT TITLE', { x: 75, y: tableY - 16, size: 7.5, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
+  page.drawText('EXPIRY DATE', { x: 415, y: tableY - 16, size: 7.5, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
+  page.drawText('PAGES', { x: 505, y: tableY - 16, size: 7.5, font: fontBold, color: rgb(0.2, 0.25, 0.3) });
 
-  let rowY = tableY - 42;
+  // Calculate row height dynamically to guarantee all included documents fit
+  const availableTableHeight = tableY - 60; // down to bottom margin
+  const docCount = includedDocs.length;
+  const rowHeight = docCount > 20 ? 13 : docCount > 14 ? 15 : 18;
+  const fontSize = docCount > 20 ? 7.5 : 8;
+
+  let rowY = tableY - 34;
   includedDocs.forEach((item, index) => {
-    if (rowY < 80) return; // prevent drawing beyond bottom margin
+    if (rowY < 40) return; // safety boundary
 
     // alternating row tint
     if (index % 2 === 1) {
       page.drawRectangle({
         x: 40,
-        y: rowY - 5,
+        y: rowY - 4,
         width: width - 80,
-        height: 16,
+        height: rowHeight - 2,
         color: rgb(0.98, 0.99, 1.0)
       });
     }
@@ -190,38 +209,28 @@ function createCoverPage(
     page.drawText(String(index + 1), {
       x: 48,
       y: rowY,
-      size: 8.5,
+      size: fontSize,
       font: fontRegular,
       color: rgb(0.3, 0.3, 0.3)
     });
 
-    const docTitle = item.requirement.title_en.length > 36
-      ? item.requirement.title_en.substring(0, 33) + '...'
+    // Prominent Document Title (English)
+    const docTitle = item.requirement.title_en.length > 58
+      ? item.requirement.title_en.substring(0, 55) + '...'
       : item.requirement.title_en;
     page.drawText(docTitle, {
       x: 75,
       y: rowY,
-      size: 8.5,
+      size: fontSize,
       font: fontBold,
       color: rgb(0.1, 0.15, 0.2)
     });
 
-    const filename = item.file.filename.length > 28
-      ? item.file.filename.substring(0, 25) + '...'
-      : item.file.filename;
-    page.drawText(filename, {
-      x: 285,
-      y: rowY,
-      size: 8,
-      font: fontRegular,
-      color: rgb(0.3, 0.35, 0.4)
-    });
-
     const expiry = item.file.expiryDate || (item.requirement.has_expiry ? 'N/A' : '-');
     page.drawText(expiry, {
-      x: 450,
+      x: 415,
       y: rowY,
-      size: 8,
+      size: fontSize,
       font: fontRegular,
       color: rgb(0.3, 0.35, 0.4)
     });
@@ -229,21 +238,12 @@ function createCoverPage(
     page.drawText(`${item.pageCount} pg`, {
       x: 505,
       y: rowY,
-      size: 8,
+      size: fontSize,
       font: fontRegular,
       color: rgb(0.3, 0.35, 0.4)
     });
 
-    rowY -= 18;
-  });
-
-  // Footer sign-off block at bottom
-  page.drawText('This tender compilation is verified and assembled under official tender instructions.', {
-    x: 40,
-    y: 60,
-    size: 7.5,
-    font: fontRegular,
-    color: rgb(0.5, 0.55, 0.6)
+    rowY -= rowHeight;
   });
 }
 
@@ -451,30 +451,14 @@ export async function generateFinalTenderPackage(
     const fontSize = 8.5;
     const textWidth = fontRegular.widthOfTextAtSize(footerText, fontSize);
 
-    // Subtle safety line above footer
-    page.drawLine({
-      start: { x: 30, y: 28 },
-      end: { x: width - 30, y: 28 },
-      thickness: 0.5,
-      color: rgb(0.85, 0.88, 0.9)
-    });
-
-    // Right-aligned footer text with clean margin
+    // Center footer text in safe bottom margin so it does not cover document content
+    const centerX = Math.max(20, (width - textWidth) / 2);
     page.drawText(footerText, {
-      x: width - textWidth - 30,
-      y: 16,
+      x: centerX,
+      y: 15,
       size: fontSize,
       font: fontRegular,
-      color: rgb(0.25, 0.3, 0.35)
-    });
-
-    // Official verification mark on left
-    page.drawText('CONFIDENTIAL • TENDER SUBMISSION', {
-      x: 30,
-      y: 16,
-      size: 7,
-      font: fontRegular,
-      color: rgb(0.6, 0.65, 0.7)
+      color: rgb(0.2, 0.25, 0.3)
     });
 
     // Apply optional signature stamp if requested

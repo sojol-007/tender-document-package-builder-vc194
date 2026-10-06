@@ -45,8 +45,8 @@ export const GeneratePackageStep: React.FC<Props> = ({
 }) => {
   const t = translations[lang];
 
-  // Options state
-  const [includeIndex, setIncludeIndex] = useState(true);
+  // Options state (Index page is an optional bonus, false by default for standard package)
+  const [includeIndex, setIncludeIndex] = useState(false);
   const [signaturePlacement, setSignaturePlacement] = useState<'cover' | 'all' | 'last'>('cover');
   const [stampImageBytes, setStampImageBytes] = useState<ArrayBuffer | null>(null);
   const [stampFileName, setStampFileName] = useState<string | null>(null);

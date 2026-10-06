@@ -145,27 +145,44 @@ export function validateRequirementsJson(raw: any): { valid: boolean; error?: st
     return { valid: false, error: '"requirements" must be a non-empty list of document rules.' };
   }
 
+  const cleanedRequirements: Requirement[] = [];
+
   for (let i = 0; i < raw.requirements.length; i++) {
     const req = raw.requirements[i];
-    if (
-      !req ||
-      typeof req !== 'object' ||
-      typeof req.id === 'undefined' ||
-      typeof req.order !== 'number' ||
-      typeof req.title_en !== 'string' ||
-      typeof req.title_bn !== 'string' ||
-      typeof req.mandatory !== 'boolean' ||
-      typeof req.has_expiry !== 'boolean'
-    ) {
+    if (!req || typeof req !== 'object') {
       return {
         valid: false,
-        error: `Requirement at index ${i} is missing required fields (id, numeric order, title_en, title_bn, mandatory, has_expiry).`
+        error: `Requirement at index ${i} is not a valid object.`
       };
     }
+
+    const orderNum = Number(req.order);
+    if (isNaN(orderNum)) {
+      return {
+        valid: false,
+        error: `Requirement at index ${i} is missing a valid numeric "order".`
+      };
+    }
+
+    if (req.id === undefined || !req.title_en || !req.title_bn) {
+      return {
+        valid: false,
+        error: `Requirement at index ${i} is missing required fields (id, title_en, or title_bn).`
+      };
+    }
+
+    cleanedRequirements.push({
+      id: String(req.id).trim(),
+      order: orderNum,
+      title_en: String(req.title_en).trim(),
+      title_bn: String(req.title_bn).trim(),
+      mandatory: Boolean(req.mandatory),
+      has_expiry: Boolean(req.has_expiry)
+    });
   }
 
-  // Sort requirements by numeric order ascending
-  const sortedRequirements = [...raw.requirements].sort((a, b) => a.order - b.order);
+  // Sort requirements strictly by numeric order ascending
+  cleanedRequirements.sort((a, b) => a.order - b.order);
 
   return {
     valid: true,
@@ -177,7 +194,7 @@ export function validateRequirementsJson(raw: any): { valid: boolean; error?: st
         bidder: String(bidder).trim(),
         submission_deadline: String(submission_deadline).trim()
       },
-      requirements: sortedRequirements
+      requirements: cleanedRequirements
     }
   };
 }
