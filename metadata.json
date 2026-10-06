@@ -1,0 +1,6 @@
+{
+  "name": "Tender Document Package Builder",
+  "description": "Turn a collection of PDF files into one complete, checked, correctly ordered PDF package ready for tender submission with exact duplicate detection and bilingual support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
